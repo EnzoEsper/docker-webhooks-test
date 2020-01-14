@@ -1,0 +1,1 @@
+* * * * * /usr/local/bin/node /usr/src/app/index.js >> /var/log/sync/index.log 2>&1

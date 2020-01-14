@@ -1,0 +1,27 @@
+version: '2.4'
+
+networks: 
+  isolation-network:
+    driver: bridge
+
+services:
+  apiservice:
+    build: "./apiservice"
+    ports: 
+      - "7070:6969"
+    networks: 
+      - isolation-network
+
+  cron:
+    build: "./cronservice"
+    ports: 
+      - "4040:3939"
+    networks: 
+      - isolation-network
+    depends_on:
+      - apiservice
+    volumes:
+      - ./var/log/sync:/var/log/sync
+      - ./cronservice/cron/root:/etc/cron.d/root
+      - ./cronservice:/usr/src/app
+      - /usr/src/app/node_modules
