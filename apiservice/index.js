@@ -1,5 +1,9 @@
+/* require("dotenv").config(); */
+
+const fs = require('fs');
 const express = require("express");
-var WebHooks = require('node-webhooks')
+var WebHooks = require('node-webhooks');
+const ngrok = require("ngrok");
 
 var webHooks = new WebHooks({
   db: './webHooks.json', // json file that store webhook URLs
@@ -30,6 +34,35 @@ app.post('/api/webhook/trigger/:name', (req, res) => {
   res.send({dada: "ok"});
 })
 
-app.listen(port, () => {
-    console.log(`Server is up on port ${port}.`);
-})
+// Add a new url to a existing webhook
+app.post('/api/webhook/add/:name', (req, res) => {
+  const name = req.params.name;
+  const url = req.body.url;
+
+  // sync instantation - add a new webhook called 'shortname1'
+  webHooks.add(name, url).then(function(){
+      res.status(201).send(url)
+  }).catch(function(err){
+      console.log(err)
+  });
+});
+
+// Fetch all the webhooks
+app.get('/api/webhook/get', async (req, res) => {
+  const whBuffer = fs.readFileSync('./webHooks.json');
+  const whJSON = whBuffer.toString();
+  const whData = JSON.parse(whJSON);
+
+  res.status(200).send(whData);
+});
+
+(async function() {
+  const url = await ngrok.connect(6969);
+
+  console.log("Tunnel Created -> ", url);
+  console.log("Tunnel Inspector ->  http://127.0.0.1:4040");
+})();
+
+const server = app.listen(6969, () => {
+  console.log("Express listening at ", server.address().port);
+});
